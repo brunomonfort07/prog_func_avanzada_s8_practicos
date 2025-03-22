@@ -21,8 +21,8 @@ valid :: Op -> Int -> Int -> Bool
 valid Add _ _ = True
 valid Sub x y = x > y
 valid Mul _ _ = True
-valid Div x y = x `mod` y == 0
-valid Pot x y = y >= 0
+valid Div x y = y /= 0 && x `mod` y == 0
+valid Pot x y = y >= 0 
 
 apply :: Op -> Int -> Int -> Int
 apply Add x y = x + y
@@ -167,8 +167,8 @@ valid' :: Op -> Int -> Int -> Bool
 valid' Add x y = x <= y
 valid' Sub x y = x > y
 valid' Mul x y = x /= 1 && y /= 1 && x <= y
-valid' Div x y = y /= 1 && x `mod` y == 0
-valid' Pot x y = y >= 0 && y /= 1
+valid' Div x y = y /= 1 && y /= 0 && x `mod` y == 0
+valid' Pot x y = y >= 0 && y /= 1 && x /= 1
 
 -- Ver con el profe línea anterior
 -- simplemente cambiando valid' por valid en la anterior solucion
