@@ -1,3 +1,5 @@
+# Sin Docker
+
 ## Comandos para ejecutar los archivos .hs, por ejemplo, cargar el archivo A.hs:
 
 <code>
@@ -6,7 +8,15 @@ cd .\tarea-uno\
 ghci .\a.hs
 </code>
 
-## Ejecutar pruebas sobre el módulo A:
+# Con Docker
+
+<code>
+docker build -t haskell-ghci .
+<br/> 
+docker run -it --rm haskell-ghci
+</code>
+
+# Ejecutar pruebas sobre los módulos:
 
 1. Cargar el archivo A.hs en el intérprete de Haskell.
 2. Ejecutar las pruebas copiando y pegando las siguientes líneas en el intérprete:
