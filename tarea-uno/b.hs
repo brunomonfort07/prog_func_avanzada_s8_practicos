@@ -20,7 +20,7 @@ valid :: Op -> Int -> Int -> Bool
 valid Add _ _ = True
 valid Sub x y = x > y
 valid Mul _ _ = True
-valid Div x y = x `mod` y == 0
+valid Div x y = y/= 0 && x `mod` y == 0
 
 apply :: Op -> Int -> Int -> Int
 apply Add x y = x + y
@@ -130,8 +130,8 @@ combine l r = [App o l r | o <- [Add,Sub,Mul,Div]]
 
 solutions :: [Int] -> Int -> [Expr]
 solutions ns n = [e | ns' <- choices ns,
-                      e <- exprs ns',
-                      eval e == [n]]
+                      e <- exprs ns',  
+                      eval e == closeValues [e] n 0]
 
 -- Combinando generacion y evaluacion
 
@@ -159,7 +159,7 @@ valid' :: Op -> Int -> Int -> Bool
 valid' Add x y = x <= y
 valid' Sub x y = x > y
 valid' Mul x y = x /= 1 && y /= 1 && x <= y
-valid' Div x y = y /= 1 && x `mod` y == 0
+valid' Div x y = y/= 0 && y /= 1 && x `mod` y == 0
 
 -- simplemente cambiando valid' por valid en la anterior solucion
 
@@ -177,4 +177,51 @@ results' ns = [res | (ls,rs) <- split ns,
 
 solutions'' :: [Int] -> Int -> [Expr]
 solutions'' ns n =
-  [e | ns' <- choices ns, (e,m) <- results' ns', m == n]
+  [e | ns' <- choices ns,
+       (e,m) <- results' ns',
+       m == n]
+
+
+closeValues :: [Expr] -> Int -> Int -> [Int]
+closeValues [] n aprox = [aprox]
+closeValues (e:es) n aprox = case eval e of{
+                          [x] -> case abs(n-x) < abs(n-aprox) of {
+                            True -> closeValues es n x;
+                            False -> closeValues es n aprox
+                          };
+                          _ -> closeValues es n aprox
+                    }
+
+
+
+
+--Pruebas
+
+-- Definición de algunas expresiones de ejemplo
+expr1 :: Expr
+expr1 = App Add (Val 1) (Val 2)  -- 1 + 2
+
+expr2 :: Expr
+expr2 = App Mul (Val 3) (Val 4)  -- 3 * 4
+
+expr3 :: Expr
+expr3 = App Sub (Val 10) (Val 5) -- 10 - 5
+
+expr4 :: Expr
+expr4 = App Div (Val 20) (Val 4) -- 20 / 4
+
+-- Lista de expresiones
+exprs2 :: [Expr]
+exprs2 = [expr1, expr2, expr3, expr4]
+
+-- Número objetivo y valor aproximado inicial
+target :: Int
+target = 15
+
+initialApprox :: Int
+initialApprox = 999
+
+-- Llamada a la función closeValues
+result :: [Int]
+result = closeValues exprs2 target initialApprox
+
