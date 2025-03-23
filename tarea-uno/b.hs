@@ -131,7 +131,9 @@ combine l r = [App o l r | o <- [Add,Sub,Mul,Div]]
 solutions :: [Int] -> Int -> [Expr]
 solutions ns n = [e | ns' <- choices ns,
                       e <- exprs ns',  
-                      eval e == closeValues [e] n 0]
+                      eval e == [n]]
+
+
 
 -- Combinando generacion y evaluacion
 
@@ -182,6 +184,8 @@ solutions'' ns n =
        m == n]
 
 
+----Funcion para obtener el valor de la solucion mas aproximada
+
 closeValues :: [Expr] -> Int -> Int -> [Int]
 closeValues [] n aprox = [aprox]
 closeValues (e:es) n aprox = case eval e of{
@@ -191,37 +195,8 @@ closeValues (e:es) n aprox = case eval e of{
                           };
                           _ -> closeValues es n aprox
                     }
-
-
-
-
---Pruebas
-
--- Definición de algunas expresiones de ejemplo
-expr1 :: Expr
-expr1 = App Add (Val 1) (Val 2)  -- 1 + 2
-
-expr2 :: Expr
-expr2 = App Mul (Val 3) (Val 4)  -- 3 * 4
-
-expr3 :: Expr
-expr3 = App Sub (Val 10) (Val 5) -- 10 - 5
-
-expr4 :: Expr
-expr4 = App Div (Val 20) (Val 4) -- 20 / 4
-
--- Lista de expresiones
-exprs2 :: [Expr]
-exprs2 = [expr1, expr2, expr3, expr4]
-
--- Número objetivo y valor aproximado inicial
-target :: Int
-target = 15
-
-initialApprox :: Int
-initialApprox = 999
-
--- Llamada a la función closeValues
-result :: [Int]
-result = closeValues exprs2 target initialApprox
-
+                    
+----Funcion para obtener todas las soluciones del valor mas aproximado (se puede usar con solutions, solutions' o solutions'' )
+closeSolutions :: [Int] -> Int -> [Expr]
+closeSolutions ns n = case closeValues (concatMap exprs (choices ns)) n 0 of
+                          [aprox] -> solutions'' ns aprox

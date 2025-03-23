@@ -1,6 +1,7 @@
 module C where
 import Data.List (sortBy)
 
+
 -- Problem description
 --
 -- Given a sequence of numbers and a target number, attempt to construct an expression whose:
@@ -178,3 +179,19 @@ results' ns = [res | (ls,rs) <- split ns,
 solutions'' :: [Int] -> Int -> [Expr]
 solutions'' ns n =
   [e | ns' <- choices ns, (e,m) <- results' ns', m == n]
+
+
+sizeExpr :: Expr -> Int 
+sizeExpr = length . show 
+
+ordenarPorLargo :: [Expr] -> [Expr]
+ordenarPorLargo (e:es) = if sizeExpr (head es) < sizeExpr e 
+                        then head es ++  ++ [e] 
+                        else e:ordenarPorLargo es
+
+-- Nos devuelve el orden de 2 expresiones
+compararPorSizeExpr :: Expr -> Expr -> Ordering
+compararPorSizeExpr e1 e2 = compare (sizeExpr e1) (sizeExpr e2)
+
+ordenarPorSizeExpr :: [Expr] -> [Expr]
+ordenarPorSizeExpr = sortBy compararPorSizeExpr
