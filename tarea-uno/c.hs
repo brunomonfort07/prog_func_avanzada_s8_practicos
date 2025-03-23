@@ -184,14 +184,19 @@ solutions'' ns n =
 sizeExpr :: Expr -> Int 
 sizeExpr = length . show 
 
-ordenarPorLargo :: [Expr] -> [Expr]
-ordenarPorLargo (e:es) = if sizeExpr (head es) < sizeExpr e 
-                        then head es ++  ++ [e] 
-                        else e:ordenarPorLargo es
+bubbleSort :: [Expr] -> [Expr]
+bubbleSort [] = []
+bubbleSort [x] = [x]
+bubbleSort (x:y:xs) = case sizeExpr x <= sizeExpr y of{
+                        True -> x : bubbleSort (y:xs);
+                        False -> y : bubbleSort (x:xs) 
+                      }
 
--- Nos devuelve el orden de 2 expresiones
-compararPorSizeExpr :: Expr -> Expr -> Ordering
-compararPorSizeExpr e1 e2 = compare (sizeExpr e1) (sizeExpr e2)
+isSorted :: [Expr] -> Bool
+isSorted [] = True
+isSorted [x] = True
+isSorted (x:y:xs) = sizeExpr x <= sizeExpr y && isSorted (y:xs)
 
-ordenarPorSizeExpr :: [Expr] -> [Expr]
-ordenarPorSizeExpr = sortBy compararPorSizeExpr
+bubbleSortExps :: [Expr] -> [Expr]
+bubbleSortExps list = if isSorted list then list else bubbleSortExps (bubbleSort list)
+
