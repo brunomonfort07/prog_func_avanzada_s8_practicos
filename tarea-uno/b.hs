@@ -1,3 +1,7 @@
+-- Denise Souberville 223427
+-- Bruno Monfort 173280
+-- Nicolás Capellino 272778
+
 module B where
 import Data.List (sortBy)
 
@@ -186,17 +190,31 @@ solutions'' ns n =
 
 ----Funcion para obtener el valor de la solucion mas aproximada
 
-closeValues :: [Expr] -> Int -> Int -> [Int]
-closeValues [] n aprox = [aprox]
-closeValues (e:es) n aprox = case eval e of{
-                          [x] -> case abs(n-x) < abs(n-aprox) of {
-                            True -> closeValues es n x;
-                            False -> closeValues es n aprox
-                          };
-                          _ -> closeValues es n aprox
-                    }
-                    
-----Funcion para obtener todas las soluciones del valor mas aproximado (se puede usar con solutions, solutions' o solutions'' )
+closeValues :: [Expr] -> Int -> Maybe Int -> Maybe Int
+closeValues [] _ aprox = aprox
+closeValues (e:es) n aprox = 
+  case eval e of 
+    [x] ->  case aprox of 
+              Nothing -> closeValues es n (Just x)
+              Just a -> if abs (n - x) < abs (n - a)
+                        then closeValues es n (Just x)
+                        else closeValues es n aprox
+              
+           
+    _ -> closeValues es n aprox
+
+-- Función para obtener todas las soluciones del valor más aproximado
 closeSolutions :: [Int] -> Int -> [Expr]
-closeSolutions ns n = case closeValues (concatMap exprs (choices ns)) n 0 of
-                          [aprox] -> solutions'' ns aprox
+closeSolutions ns n = case closeValues (concatMap exprs (choices ns)) n Nothing of 
+                        Nothing   -> []  
+                        Just aprox -> solutions'' ns aprox
+                      
+
+--closeSolutions [1,5,3] 500
+--[(1+3)*5]
+
+--closeSolutions [1,5,3] 1
+--[1,5-(1+3),(5-1)-3,(5-3)-1]
+
+--closeSolutions [1,5,3,4,7] 500
+--[(1+5)*(3*(4*7)),3*((1+5)*(4*7)),(3*(1+5))*(4*7),3*(4*((1+5)*7)),(3*4)*((1+5)*7),(1+5)*(4*(3*7)),4*((1+5)*(3*7)),4*(3*((1+5)*7)),4*(7*(3*(1+5))),3*(7*(4*(1+5))),(3*7)*(4*(1+5)),(1+5)*(7*(3*4)),7*((1+5)*(3*4)),7*(3*(4*(1+5))),7*(4*(3*(1+5)))]

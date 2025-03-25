@@ -1,3 +1,7 @@
+-- Denise Souberville 223427
+-- Bruno Monfort 173280
+-- Nicolás Capellino 272778
+
 module C where
 import Data.List (sortBy)
 
