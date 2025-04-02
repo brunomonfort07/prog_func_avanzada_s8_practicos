@@ -2,6 +2,12 @@
 -- Bruno Monfort 173280
 -- Nicolás Capellino 272778
 
+{- 
+Se piden
+  Los ejercicios de semigrupos de las paginas 593 y 594, ejercicos 9 (Combine), 11, 12 y 13 (Validation).
+  Luego el ejercicio de la pagina 596, ejercicio 8 (Mem)
+-}
+
 import Data.Monoid
 
 newtype Mem s a =
