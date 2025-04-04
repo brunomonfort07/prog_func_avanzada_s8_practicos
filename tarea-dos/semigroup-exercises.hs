@@ -9,17 +9,18 @@ Se piden
 -}
 
 import Data.Semigroup
+import Language.Haskell.TH (isInstance)
 
 --EJERCICIO 9  - COMBINE
 -- Dado un tipo de dato, implemente la instancia Semigroup. 
 newtype Combine a b = Combine { unCombine :: a -> b }
 
 instance Semigroup b => Semigroup (Combine a b) where
-    (<>) (Combine f) (Combine g) = Combine $ \x -> f x <> g x
-    --Lo anterior es la forma optimizada de esta: (<>) = \cf cg -> Combine $ \x -> (unCombine cf) x <> (unCombine cg) x
+    (Combine f) <> (Combine g) = Combine (\x -> f x <> g x)
 
 f = Combine $ \n -> Sum (n + 1)
 g = Combine $ \n -> Sum (n - 1)
+
 
 {-
 Prueba. Copiar y pegar en GHCi:
@@ -49,22 +50,19 @@ data Validation a b = Failure a | Success b
     deriving (Eq, Show)
 
 instance Semigroup a => Semigroup (Validation a b) where
-    (<>) :: Semigroup a => Validation a b -> Validation a b -> Validation a b
-    (<>) x y = case (x, y) of
-      (Failure fx, Failure fy) -> Failure (fx <> fy)
-      (Success s1, Success s2) -> Success s1 <> Success s2
-      (Failure fx, Success fy) -> Failure fx
-      (Success fx, Failure fy) -> Failure fy
---TODO estará bien???
+    (Failure x) <> (Failure y) = Failure (x <> y)
+    (Failure x) <> (Success y) = Success y
+    (Success x) <> (Failure y) = Success x
+    (Success x) <> (Success y) = Success y
 
-
+        
 --EJERCICIO 12 - VALIDATION II
 
 newtype AccumulateRight a b = AccumulateRight (Validation a b)
     deriving (Eq, Show)
 
 instance Semigroup b => Semigroup (AccumulateRight a b) where
-    (<>) x y = case (x, y) of
+    (AccumulateRight (Failure x)) <> (AccumulateRight (Failure y)) = AccumulateRight (Failure (x ++ y))
         
 
 
