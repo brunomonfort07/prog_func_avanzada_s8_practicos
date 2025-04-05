@@ -10,6 +10,7 @@ Se piden
 
 import Data.Semigroup
 import Language.Haskell.TH (isInstance)
+import System.Win32 (xBUTTON1)
 
 --EJERCICIO 9  - COMBINE
 -- Dado un tipo de dato, implemente la instancia Semigroup. 
@@ -51,9 +52,10 @@ data Validation a b = Failure a | Success b
 
 instance Semigroup a => Semigroup (Validation a b) where
     (Failure x) <> (Failure y) = Failure (x <> y)
-    (Failure x) <> (Success y) = Success y
-    (Success x) <> (Failure y) = Success x
-    (Success x) <> (Success y) = Success y
+    (Success x) <> (Success y) = Success x
+    Failure x <> _ = Failure x
+    _ <> Failure y = Failure y
+
 
         
 --EJERCICIO 12 - VALIDATION II
@@ -61,12 +63,10 @@ instance Semigroup a => Semigroup (Validation a b) where
 newtype AccumulateRight a b = AccumulateRight (Validation a b)
     deriving (Eq, Show)
 
+
 instance Semigroup b => Semigroup (AccumulateRight a b) where
-    (AccumulateRight (Failure x)) <> (AccumulateRight (Failure y)) = AccumulateRight (Failure (x ++ y))
+    (AccumulateRight (Success x)) <> (AccumulateRight (Success y)) = AccumulateRight (Success  (x <> y))
         
-
-
-
 
 
 --EJERCICIO 13 - VALIDATION III
@@ -75,4 +75,7 @@ newtype AccumulateBoth a b = AccumulateBoth (Validation a b)
     deriving (Eq, Show)
 
 instance (Semigroup a, Semigroup b) => Semigroup (AccumulateBoth a b) where
-    --TO DO
+    AccumulateBoth (Success x) <> AccumulateBoth (Success y) = AccumulateBoth (Success (x <> y))
+    AccumulateBoth (Failure x) <> AccumulateBoth (Failure y) = AccumulateBoth (Failure (x <> y))
+    AccumulateBoth (Failure x) <> _ = AccumulateBoth (Failure x)
+    _ <> AccumulateBoth (Failure y) = AccumulateBoth (Failure y)
