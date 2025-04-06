@@ -4,7 +4,8 @@
 
 {- 
 Se piden
-  Los ejercicios de semigrupos de las paginas 593 y 594, ejercicos 9 (Combine), 11, 12 y 13 (Validation).
+  Los ejercicios de semigrupos de las paginas 593 y 594, 
+      - ejercicos 9 (Combine), 11, 12 y 13 (Validation).
   Luego el ejercicio de la pagina 596, ejercicio 8 (Mem)
 -}
 
@@ -15,8 +16,9 @@ import Data.Semigroup
 newtype Combine a b = Combine { unCombine :: a -> b }
 
 instance Semigroup b => Semigroup (Combine a b) where
-    (<>) (Combine f) (Combine g) = Combine $ \x -> f x <> g x
-    --Lo anterior es la forma optimizada de esta: (<>) = \cf cg -> Combine $ \x -> (unCombine cf) x <> (unCombine cg) x
+    (<>) (Combine f) (Combine g) = Combine (\x -> f x <> g x)
+    -- Lo anterior es la forma optimizada de esta: (<>) = \cf cg -> Combine $ \x -> (unCombine cf) x <> (unCombine cg) x
+
 
 f = Combine $ \n -> Sum (n + 1)
 g = Combine $ \n -> Sum (n - 1)
@@ -49,27 +51,33 @@ data Validation a b = Failure a | Success b
     deriving (Eq, Show)
 
 instance Semigroup a => Semigroup (Validation a b) where
-    (<>) :: Semigroup a => Validation a b -> Validation a b -> Validation a b
     (<>) x y = case (x, y) of
+      (Success s, Success _) -> Success s
+      (Success s, Failure _) -> Success s
+      (Failure _, Success s) -> Success s
       (Failure fx, Failure fy) -> Failure (fx <> fy)
-      (Success s1, Success s2) -> Success s1 <> Success s2
-      (Failure fx, Success fy) -> Failure fx
-      (Success fx, Failure fy) -> Failure fy
---TODO estará bien???
+-- Semigroup still provides a binary associative operation, one that typ
+-- ically joins two things together (as in concatenation or summation),
+-- but doesn’t have an identity value.
 
 
---EJERCICIO 12 - VALIDATION II
+--EJERCICIO 12 - VALIDATION II - wrapper AccumulateRight
 
+--AccumulateSuccess
+{-Cuando hay un Success, se intenta preservar o acumularlo. 
+  Pero si hay un Failure, se deja de intentar y se devuelve inmediatamente. 
+  No se acumulan los errores (como sí lo haría AccumulateLeft).-}
 newtype AccumulateRight a b = AccumulateRight (Validation a b)
     deriving (Eq, Show)
 
 instance Semigroup b => Semigroup (AccumulateRight a b) where
     (<>) x y = case (x, y) of
-        
-
-
-
-
+        (AccumulateRight (Success s1), AccumulateRight (Success s2)) 
+            -> AccumulateRight (Success (s1 <> s2))
+        (AccumulateRight (Success _), AccumulateRight (Failure f))
+            -> AccumulateRight (Failure f)
+        (AccumulateRight (Failure f), _)
+            -> AccumulateRight (Failure f)
 
 --EJERCICIO 13 - VALIDATION III
 
@@ -77,4 +85,12 @@ newtype AccumulateBoth a b = AccumulateBoth (Validation a b)
     deriving (Eq, Show)
 
 instance (Semigroup a, Semigroup b) => Semigroup (AccumulateBoth a b) where
-    --TO DO
+    (<>) x y = case (x, y) of
+        (AccumulateBoth (Success s1), AccumulateBoth (Success s2)) 
+            -> AccumulateBoth (Success (s1 <> s2))
+        (AccumulateBoth (Success _), AccumulateBoth (Failure f))
+            -> AccumulateBoth (Failure f)
+        (AccumulateBoth (Failure f), AccumulateBoth (Success _))
+            -> AccumulateBoth (Failure f)
+        (AccumulateBoth (Failure f1), AccumulateBoth (Failure f2)) 
+            -> AccumulateBoth (Failure (f1 <> f2))
