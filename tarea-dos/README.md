@@ -80,6 +80,18 @@ La combinación de `Sum 2` y `Sum 0` da como resultado `Sum 2` porque `Sum` es u
 Este patrón de combinar funciones en un contenedor como `Combine` es útil cuando quieres aplicar varias transformaciones a un valor y combinar sus resultados de manera estructurada y coherente.
 
 
+## Ejercicio Monoides Mem
+
+Como ejecutar los casos de prueba:
+
+- Abrir un CMD
+- Ejecutar los comandos:
+<code>
+cd .\tarea-dos\
+<br/>
+ghc monoid-exercise.hs -o memtest
+<br/>
+memtest
 
 ## Sin Docker
 
