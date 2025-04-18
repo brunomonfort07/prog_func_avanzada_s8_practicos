@@ -11,6 +11,7 @@ Se piden
 import Data.Semigroup
 import Language.Haskell.TH (isInstance)
 import System.Win32 (xBUTTON1)
+import Data.Monoid
 
 --EJERCICIO 9  - COMBINE
 -- Dado un tipo de dato, implemente la instancia Semigroup. 
@@ -52,7 +53,6 @@ data Validation a b = Failure a | Success b
 
 instance Semigroup a => Semigroup (Validation a b) where
     (Failure x) <> (Failure y) = Failure (x <> y)
-    (Success x) <> (Success y) = Success x
     Failure x <> _ = Failure x
     _ <> Failure y = Failure y
 
@@ -79,3 +79,25 @@ instance (Semigroup a, Semigroup b) => Semigroup (AccumulateBoth a b) where
     AccumulateBoth (Failure x) <> AccumulateBoth (Failure y) = AccumulateBoth (Failure (x <> y))
     AccumulateBoth (Failure x) <> _ = AccumulateBoth (Failure x)
     _ <> AccumulateBoth (Failure y) = AccumulateBoth (Failure y)
+
+
+newtype Mem s a =
+    Mem { runMem :: s -> (a, s) }
+
+instance Semigroup a => Semigroup (Mem s a) where
+    (Mem f) <> (Mem g) = Mem $ \s ->
+        let (a1, s1) = f s
+            (a2, s2) = g s1
+        in (a1 <> a2, s2)
+
+instance Monoid a => Monoid (Mem s a) where
+    mempty = Mem $ \s -> (mempty, s) 
+
+
+f' = Mem $ \s -> ("hi", s + 1)
+main = do
+    print $ runMem (f' <> mempty) 0
+    print $ runMem (mempty <> f') 0
+    print $ (runMem mempty 0 :: (String, Int))
+    print $ runMem (f' <> mempty) 0 == runMem f' 0
+    print $ runMem (mempty <> f') 0 == runMem f' 0
