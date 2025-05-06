@@ -7,42 +7,6 @@ module MonadsExercises where
 --Libro: Programming in Haskell, 2nd Edition
 
 {-
-Se pide resolver los siguientes ejercicios de la seccion 12.5 pagina 175 y 176
-
-ejercicio 4
-ejercicio 8
-Y el siguiente ejercicio sobre la Monada ST a vista en el teorico, se pide implementar las siguientes funciones:
-
-get :: ST State
-retorna el actual estado
-put :: State -> ST ()
-pisa el estado con el parametro dado retornando unit
-Testear sus funciones get y put con la siguiente prueba
-testST :: ST State
-testST = do
-  -- obtiene el estado en s
-  s <- get
-  -- suma uno y sobrescribe el estado
-  put (s + 1)
-  -- devuelve el estado actual
-  get
-
-runTestST = app testST 3
-runTestST deberia devolver la tupla (4,4)
-
-fresh :: ST State
-reimplementar utilizando la notacion do y las primitivas anteriores la funcion fresh vista en el teorico.
--}
-
---Definicion Monad
---class Applicative m => Monad m where
-    --return :: a -> ma
-    --(>>=) :: ma -> (a -> mb) -> mb
-    --return = pure
-
-
-
-{-
 EJERCICIO 4 - Sección 12.5 pagina 175 y 176
 
 4. There may be more than one way to make a parameterised type into an applicative functor. 
@@ -60,8 +24,6 @@ one instance declaration for a given class.
 newtype ZipList a = Z [a] deriving Show
 
 instance Functor ZipList where
-    -- Aplicar fmap sobre Z xs debe significar: aplicar g a cada elemento de xs, y 
-    -- devolver un nuevo ZipList con los resultados.
     fmap _ (Z [])     = Z []
     fmap g (Z (x:xs)) = let Z ys = fmap g (Z xs)
                         in Z (g x : ys)
@@ -71,4 +33,78 @@ instance Applicative ZipList where
     _ <*> Z [] = Z []
     Z [] <*> _ = Z []
     Z (f:fs) <*> Z (a:as) = Z (f a:(fs <*> as))
-    
+
+{-
+EJERCICIO 8 - Sección 12.5 pagina 175 y 176
+
+8. Rather than making a parameterised type into instances of the Functor, Applicative and Monad 
+classes in this order, in practice it is sometimes simpler to define the functor and applicative 
+instances in terms of the monad instance, relying on the fact that the order in which declarations 
+are made is not important in Haskell. 
+
+Complete the missing parts in the following declarations for the ST type using the do notation.
+-}
+
+type State = Int
+
+newtype ST a = S (State -> (a,State))
+
+app (S st) x = st x
+
+instance Functor ST where
+    fmap :: (a -> b) -> ST a -> ST b
+    fmap g (S sas) = do
+        a <- S (app (S sas))
+        S (\s -> (g a, s))
+
+instance Applicative ST where
+    pure x = S (\s -> (x,s))
+    (S sabs) <*> (S sas) = do
+        f <- S (app (S sabs))
+        a <- S (app (S sas))
+        pure (f a)
+
+{- >>= (bind)
+Dame un valor envuelto (m a), y una función que usa ese valor (a -> m b), y  encadenalos 
+manteniendo el contexto monádico -}
+instance Monad ST where
+    st >>= f = S $ \s -> do
+        let (x, s') = app st s
+        let S g = f x
+        g s'
+
+{-
+EJERCICIO:
+El siguiente ejercicio sobre la Monada ST a vista en el teorico, se pide implementar las 
+siguientes funciones:
+-}
+
+{- Get = retorna el actual estado -}
+get :: ST State
+get = undefined
+
+
+{- Put = pisa el estado con el parametro dado retornando unit -}
+put :: State -> ST ()
+put = undefined
+
+{- Testear sus funciones get y put con la siguiente prueba -}
+
+testST :: ST State
+testST = do
+  -- obtiene el estado en s
+  s <- get
+  -- suma uno y sobrescribe el estado
+  put (s + 1)
+  -- devuelve el estado actual
+  get
+
+runTestST = app testST 3
+--runTestST deberia devolver la tupla (4,4)
+
+{-
+Fresh - Reimplementar utilizando la notacion do y las primitivas anteriores la funcion fresh vista en el teorico.
+-}
+
+fresh :: ST State
+fresh = undefined
