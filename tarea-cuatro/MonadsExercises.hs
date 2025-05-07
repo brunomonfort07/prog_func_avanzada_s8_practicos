@@ -4,12 +4,19 @@
 
 module MonadsExercises where
 
+
+type State = Int
+
+newtype ST a = S (State -> (a,State))
+
+app (S st) x = st x
+
 --Libro: Programming in Haskell, 2nd Edition
 
 {-
 EJERCICIO 4 - Sección 12.5 pagina 175 y 176
 
-4. There may be more than one way to make a parameterised type into an applicative functor. 
+There may be more than one way to make a parameterised type into an applicative functor. 
 For example, the library Control. 
 Applicative provides an alternative 'zippy' instance for lists, in which the function pure 
 makes an infinite list of copies of its argument, and the operator <*> applies each argument 
@@ -37,7 +44,7 @@ instance Applicative ZipList where
 {-
 EJERCICIO 8 - Sección 12.5 pagina 175 y 176
 
-8. Rather than making a parameterised type into instances of the Functor, Applicative and Monad 
+Rather than making a parameterised type into instances of the Functor, Applicative and Monad 
 classes in this order, in practice it is sometimes simpler to define the functor and applicative 
 instances in terms of the monad instance, relying on the fact that the order in which declarations 
 are made is not important in Haskell. 
@@ -45,11 +52,7 @@ are made is not important in Haskell.
 Complete the missing parts in the following declarations for the ST type using the do notation.
 -}
 
-type State = Int
 
-newtype ST a = S (State -> (a,State))
-
-app (S st) x = st x
 
 instance Functor ST where
     fmap :: (a -> b) -> ST a -> ST b
@@ -103,8 +106,13 @@ runTestST = app testST 3
 --runTestST deberia devolver la tupla (4,4)
 
 {-
-Fresh - Reimplementar utilizando la notacion do y las primitivas anteriores la funcion fresh vista en el teorico.
+Fresh - Reimplementar utilizando la notacion do y las primitivas anteriores la funcion fresh vista en el teorico:
+fresh :: ST Int
+fresh = S (\n -> (n, n+1))
 -}
 
 fresh :: ST State
-fresh = undefined
+fresh = do
+    n <- get      -- obtenemos el estado actual
+    put (n + 1)   -- actualizamos el estado al siguiente
+    return n      -- devolvemos el nuevo valor
