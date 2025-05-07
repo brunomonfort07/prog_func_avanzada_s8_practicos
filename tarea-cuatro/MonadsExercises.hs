@@ -81,12 +81,12 @@ siguientes funciones:
 
 {- Get = retorna el actual estado -}
 get :: ST State
-get = undefined
+get = S (\s -> (s, s))
 
 
 {- Put = pisa el estado con el parametro dado retornando unit -}
 put :: State -> ST ()
-put = undefined
+put x = S (\_ -> ((), x))
 
 {- Testear sus funciones get y put con la siguiente prueba -}
 
