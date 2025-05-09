@@ -4,6 +4,8 @@
 
 module MonadsExercises where
 
+--Libro: Programming in Haskell, 2nd Edition
+
 {-
 EJERCICIO 4 - Sección 12.5 pagina 175 y 176
 
@@ -26,7 +28,9 @@ instance Functor ZipList where
     fmap g (Z (x:xs)) = let Z ys = fmap g (Z xs)
                         in Z (g x : ys)
 
-instance Applicative ZipList where 
+instance Applicative ZipList where
+    -- la lista empieza con x, y el resto de la lista es la misma lista (xs). Es una forma perezosa de decir "esto se repite para siempre".
+    -- Existe el método repeat que hace lo mismo, https://hoogle.haskell.org/?hoogle=repeat 
     pure x = Z (let xs = x:xs in xs) 
     _ <*> Z [] = Z []
     Z [] <*> _ = Z []
@@ -62,6 +66,9 @@ instance Applicative ST where
         x <- stx
         return (f x)
 
+{- >>= (bind)
+Dame un valor envuelto (m a), y una función que usa ese valor (a -> m b), y  encadenalos 
+manteniendo el contexto monádico -}
 instance Monad ST where
     st >>= f = S (\s -> let (x,s') = app st s in app (f x) s')
 
@@ -71,19 +78,27 @@ El siguiente ejercicio sobre la Monada ST a vista en el teorico, se pide impleme
 siguientes funciones:
 -}
 
+{- Get = retorna el actual estado -}
 get :: ST State
 get = S (\s -> (s, s))
 
+{- Put = pisa el estado con el parametro dado retornando unit -}
 put :: State -> ST ()
 put x = S (\_ -> ((), x))
 
+{- Testear sus funciones get y put con la siguiente prueba -}
+
 testST :: ST State
 testST = do
+  -- obtiene el estado en s
   s <- get
+  -- suma uno y sobrescribe el estado
   put (s + 1)
+  -- devuelve el estado actual
   get
 
 runTestST = app testST 3
+--runTestST deberia devolver la tupla (4,4)
 
 {-
 Fresh - Reimplementar utilizando la notacion do y las primitivas anteriores la funcion fresh vista en el teorico:
@@ -93,6 +108,6 @@ fresh = S (\n -> (n, n+1))
 
 fresh :: ST State
 fresh = do
-    n <- get
-    put (n + 1)
-    return n
+    n <- get      -- obtenemos el estado actual
+    put (n + 1)   -- actualizamos el estado al siguiente
+    return n      -- devolvemos el nuevo valor
