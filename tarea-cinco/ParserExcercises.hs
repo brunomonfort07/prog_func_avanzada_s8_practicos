@@ -60,8 +60,36 @@ Ejercicio 6 del Hutton (pag. 194)
 Extend the parser expr :: Parser Int to support subtraction and division,
 and to use integer values rather than natural numbers, based upon the following
 revisions to the grammar:
-expr ::“ term p + expr | - expr |  q
-term ::“ factor p * term | / term |  q
-factor ::“ ( expr ) | int
-int ::“ ¨ ¨ ¨ | -1 | 0 | 1 | ¨ ¨ ¨
+expr   ::= term (+ expr | - expr | ε)
+term   ::= factor (* term | / term | ε)
+factor ::= ( expr ) | int
+int    ::= ..., -1, 0, 1, ...
 -}
+
+
+-- codigo del libro... TO DO: AGREGAR LA RESTA
+expr :: Parser Int
+expr = do t <- term
+          do
+            symbol "+"
+            e <- expr
+            return (t + e)
+          +++ 
+          return t
+
+-- codigo del libro... TO DO: AGREGAR LA DIVISIÓN
+term :: Parser Int
+term = do f <- factor
+          do 
+            symbol "*"
+            t <- term
+            return (f * t)
+          +++ return f
+
+-- codigo del libro... TO DO: CAMBIAR A INTEGER
+factor :: Parser Int
+factor = do symbol "("
+            e <- expr
+            symbol ")"
+            return e
+         +++ natural
