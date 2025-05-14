@@ -5,6 +5,7 @@
 module ParserExercises where
 
 import Parsing
+import Control.Applicative (Alternative((<|>)))
 
 
 {- PRIMER EJERCICIO:
@@ -68,23 +69,25 @@ int    ::= ..., -1, 0, 1, ...
 
 
 -- codigo del libro... TO DO: AGREGAR LA RESTA
+
 expr :: Parser Int
-expr = do t <- term
-          do
-            symbol "+"
-            e <- expr
-            return (t + e)
-          +++ 
-          return t
+expr = do
+  t <- term
+  do symbol "+"
+     e <- expr
+     return (t + e)
+     -- <|> do symbol "-" 
+     <|> return t
 
 -- codigo del libro... TO DO: AGREGAR LA DIVISIÓN
 term :: Parser Int
-term = do f <- factor
-          do 
-            symbol "*"
-            t <- term
-            return (f * t)
-          +++ return f
+term = do 
+    f <- factor
+    do symbol "*"
+       t <- term
+       return (f * t)
+       -- <|> do symbol "/" ...
+       <|> return f
 
 -- codigo del libro... TO DO: CAMBIAR A INTEGER
 factor :: Parser Int
@@ -92,4 +95,6 @@ factor = do symbol "("
             e <- expr
             symbol ")"
             return e
-         +++ natural
+         <|> natural
+
+-- parseTest1 = parse ...
