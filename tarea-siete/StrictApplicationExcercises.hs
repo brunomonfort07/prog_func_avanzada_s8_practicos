@@ -34,9 +34,10 @@ takeTree 0 _ = Leaf
 takeTree _ Leaf = Leaf
 takeTree n (Node l x r) = Node (takeTree (n-1) l) x (takeTree (n-1) r)
 
+-- la versión desarrollada de replicate sería algo así:    replicate n x = take n (repeat x)
 
-replicate :: Int -> a -> Tree a
-replicateTree n =  --TO DO
+replicateTree :: Int -> a -> Tree a
+replicateTree n t =  takeTree n (repeatTree t)
 
 {- SEGUNDO EJERCICIO:
 6. Newton’s method for computing the square root of a (non-negative) floating-point
