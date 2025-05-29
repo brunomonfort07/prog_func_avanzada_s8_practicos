@@ -27,8 +27,9 @@ data Tree a = Leaf | Node (Tree a) a (Tree a)
 deriving Show
 
 repeatTree :: a -> Tree a
-repeatTree x = xs where xs = Node xs x xs
+repeatTree x = t where t = Node t x t
 
+--Asumimos que el take de los tipo Tree, hace un take por nivel del arbol, y no por cantidad de nodos.
 takeTree :: Int -> Tree a -> Tree a
 takeTree 0 _ = Leaf
 takeTree _ Leaf = Leaf
@@ -56,9 +57,22 @@ and 0.00001 as the distance value.
 -}
 
 
+
+
 -- iterate f x = x : iterate f (f x)
 -- iterate (+1) 0
 -- [0,1,2,3,4,5,6,7,8,9,...]  (lista infinita de enteros crecientes)
 
+1 2.5 2.7 2.88 2.999 2.999999 2.9999999
+
 sqroot :: Double -> Double
-sqroot x = -- TO DO
+sqroot n = case n 
+    a = 1.0
+    ite
+    next a = (a + n / a) / 2
+
+next :: Double -> Double
+next a = (a + n / a) / 2
+
+approximate :: Double -> Double
+approximate a = iterate next a
