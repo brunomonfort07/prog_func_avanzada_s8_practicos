@@ -1,0 +1,44 @@
+-- Denise Souberville 223427
+-- Bruno Monfort 173280
+-- Nicolás Capellino 272778
+
+
+Ejercicios:
+
+1. Show that add n (Succ m) = Succ (add n m), by induction on n.
+
+
+Definiciones previas:
+
+data Nat = Zero | Succ Nat
+
+add :: Nat -> Nat -> Nat
+add Zero     m = m
+add (Succ n) m = Succ (add n m)
+
+Demostración:
+-- Caso base n =  Zero --
+
+Lado izquierdo:
+add Zero (Succ m) = Succ m              -- Por definición de add
+
+Lado derecho:
+Succ (add Zero m) = Succ m              -- Por definición de add
+
+Queda demostrado.
+
+
+
+-- Caso inductivo --
+
+Lado izquierdo:
+add n (Succ m) = add (Succ m) n 
+
+
+
+
+
+
+
+2. Using this property, together with add n Zero = n, show that addition is
+commutative, add n m = add m n, by induction on n.
