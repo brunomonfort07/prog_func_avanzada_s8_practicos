@@ -49,38 +49,75 @@ Ejercicios:
 
 1. Show that add n (Succ m) = Succ (add n m), by induction on n.
 
+    Definiciones previas:
 
-Definiciones previas:
+    data Nat = Zero | Succ Nat
 
-data Nat = Zero | Succ Nat
+    add :: Nat -> Nat -> Nat
+    add Zero     m = m
+    add (Succ n) m = Succ (add n m)
 
-add :: Nat -> Nat -> Nat
-add Zero     m = m
-add (Succ n) m = Succ (add n m)
+    Demostración:
+        -- Caso base n = Zero --
 
-Demostración:
--- Caso base n =  Zero --
+            Lado izquierdo:
+            add Zero (Succ m) = Succ m              -- Por definición de add
 
-Lado izquierdo:
-add Zero (Succ m) = Succ m              -- Por definición de add
+            Lado derecho:
+            Succ (add Zero m) = Succ m              -- Por definición de add
 
-Lado derecho:
-Succ (add Zero m) = Succ m              -- Por definición de add
+            Queda demostrado.
 
-Queda demostrado.
+        -- Caso inductivo --
+            -- Hipótesis de inducción ("Si p es válido para n"):
+                add n (Succ m) = Succ (add n m)
 
+            -- Debemos probar que p es válido también para Succ n:
+                add (Succ n) (Succ m) = Succ (add (Succ n) m)
 
+            -- Lado izquierdo:
+            add (Succ n) (Succ m) = 
+            = {  aplicar definición de 'add'  -> add (Succ n) m = Succ (add n m) }
+              Succ (add n (Succ m))
+            = {  aplicar hipótesis  -> add n (Succ m) = Succ (add n m) }
+              Succ (Succ (add n m))
+            = {  aplicar definición de 'add'  -> add (Succ n) m = Succ (add n m) }
+              Succ (add (Succ n) m)
+              
+            Queda demostrado.
 
--- Caso inductivo --
+2. Using this property, together with add n Zero = n, show that addition is commutative, add n m = add m n, by induction on n.
 
-Lado izquierdo:
-add n (Succ m) = add (Succ m) n 
+    Definiciones previas:
+        Prop 1: 
+            add n (Succ m) = Succ (add n m)
+        Prop 2:
+            add n Zero = n
+    
+    Demostración:
+        -- Caso base n = Zero --
+            -- add Zero m = add m Zero
+            
+            add Zero m
+            = {  aplicar definición de 'add'  -> add Zero m = m }
+              m
+            = {  aplicar Prop 2  -> add n Zero = n }
+              add m Zero
+              
+            Queda demostrado.
+            
+        -- Caso inductivo --
+            -- Hipótesis de inducción ("Si p es válido para n"):
+                add n m = add m n
 
-
-
-
-
-
-
-2. Using this property, together with add n Zero = n, show that addition is
-commutative, add n m = add m n, by induction on n.
+            -- Debemos probar que p es válido también para Succ n:
+                add (Succ n) m = add m (Succ n)
+            
+            -- Lado izquierdo:
+            add (Succ n) m
+            = {  aplicar definición de 'add'  -> add (Succ n) m = Succ (add n m) }
+              Succ (add n m)
+            = {  Prop 1 :  add n (Succ m) = Succ (add n m)  }
+              add n (Succ m)
+              
+            Queda demostrado.
