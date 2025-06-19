@@ -5,7 +5,6 @@
 module MonadTransformers where
 
 import Laboratorio
-import qualified Data.Function as place
 
 newtype Reader r a = Reader { runReader :: r -> a }
 
@@ -100,9 +99,10 @@ Hi: 10
 rPrintAndInc :: (Num a, Show a) => ReaderT a IO a
 rPrintAndInc = ReaderT (\a -> do
     putStrLn $ "Hi: " ++ show a
-    return a)
+    return $ a + 1)
 
-{- 6. sPrintIncAccum first prints the input with a greeting, then puts
+{- 6. 
+sPrintIncAccum first prints the input with a greeting, then puts
 the incremented input as the new state, and returns the original
 input as a String.
 sPrintIncAccum :: (Num a, Show a) => StateT a IO String
