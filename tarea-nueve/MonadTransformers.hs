@@ -5,6 +5,7 @@
 module MonadTransformers where
 
 import Laboratorio
+import qualified Data.Function as place
 
 newtype Reader r a = Reader { runReader :: r -> a }
 
@@ -20,7 +21,9 @@ instance Monad (Reader r) where
   Reader f >>= g = Reader (\ a -> runReader (g (f a)) a)
 
 --Capítulo 26 del Allen, sección 26.14, ejercicos: "Write the code"  y "Fix the code", páginas 964-965.
-{- 1. 
+{- 
+WRITE THE CODE
+1. 
 rDec is a function that should get its argument in the context of
 Reader and return a value decremented by one.
 rDec :: Num a => Reader a a
@@ -114,4 +117,50 @@ Hi: 3
 Hi: 4
 Hi: 5
 [("1",2),("2",3),("3",4),("4",5),("5",6)]
+-}
+
+
+
+{- 
+FIX THE CODE
+The code won’t typecheck as written; fix it so that it does. Feel free to
+ add imports if it provides something useful. Functions will be used
+ that we haven’t introduced. You’re not allowed to change the types asserted. 
+ 
+ You may have to fix the code in more than one place.
+-}
+
+-- import Control.Monad.Trans.Maybe
+-- import Control.Monad
+
+-- isValid :: String-> Bool
+-- isValid v = '!' `elem` v
+
+-- maybeExcite :: MaybeT IO String
+-- maybeExcite = do
+--     v <- getLine
+--     guard $ isValid v
+--     return v
+
+-- doExcite :: IO ()
+-- doExcite = do
+--     putStrLn "say something excite!"
+--     excite <- maybeExcite
+--     case excite of
+--         Nothing-> putStrLn "MOAR EXCITE"
+--         Just e-> putStrLn ("Good, was very excite: " ++ e)
+
+
+
+{-
+Se pide tambien escribir el Monad Transfromer de Writer, y sus instancias de Functor, 
+Applicative, Monad y MonadTrans. Para la instancia de Applicative usar la instancia de 
+monada, y no la de applicative como usualmente se hace,  al igual que se hizo en clase 
+cuando se definió la instancia Applicative para StateT.
+
+Usar el monad transformer definido anteriormente para extender el ejemplo de expresiones 
+visto en el teórico, agregando al stack de monadas la monada definida anteriormente,  
+de forma de agregar el efecto de tracing o logging al ejemplo visto en clase. Se pide 
+también modificar el evaluador para que logee cada vez que se calcula un resultado 
+intermedio.
 -}
