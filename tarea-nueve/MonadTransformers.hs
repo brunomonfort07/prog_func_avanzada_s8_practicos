@@ -5,6 +5,8 @@
 module MonadTransformers where
 
 import Laboratorio
+import Control.Monad.Trans.Maybe
+import Control.Monad
 
 newtype Reader r a = Reader { runReader :: r -> a }
 
@@ -105,8 +107,6 @@ rPrintAndInc = ReaderT (\a -> do
 sPrintIncAccum first prints the input with a greeting, then puts
 the incremented input as the new state, and returns the original
 input as a String.
-sPrintIncAccum :: (Num a, Show a) => StateT a IO String
-sPrintIncAccum = undefined
 Prelude> runStateT sPrintIncAccum 10
 Hi: 10
 ("10",11)
@@ -118,8 +118,10 @@ Hi: 4
 Hi: 5
 [("1",2),("2",3),("3",4),("4",5),("5",6)]
 -}
-
-
+sPrintIncAccum :: (Num a, Show a) => StateT a IO String
+sPrintIncAccum = StateT (\a -> do
+    putStrLn $ "Hi: " ++ show a
+    return (show a, a + 1))
 
 {- 
 FIX THE CODE
@@ -130,27 +132,25 @@ The code won’t typecheck as written; fix it so that it does. Feel free to
  You may have to fix the code in more than one place.
 -}
 
--- import Control.Monad.Trans.Maybe
--- import Control.Monad
+isValid :: String-> Bool
+isValid v = '!' `elem` v
 
--- isValid :: String-> Bool
--- isValid v = '!' `elem` v
+-- guard produce la excepción cuando la condición es falsa (guard llama a mzero, que 
+-- en IO falla). No hay una instancia de Alternative apropiada para manejar eso graciosamente.
+maybeExcite :: Control.Monad.Trans.Maybe.MaybeT IO String
+maybeExcite = Control.Monad.Trans.Maybe.MaybeT $ do
+    v <- getLine
+    if isValid v
+        then return $ Just v
+        else return Nothing
 
--- maybeExcite :: MaybeT IO String
--- maybeExcite = do
---     v <- getLine
---     guard $ isValid v
---     return v
-
--- doExcite :: IO ()
--- doExcite = do
---     putStrLn "say something excite!"
---     excite <- maybeExcite
---     case excite of
---         Nothing-> putStrLn "MOAR EXCITE"
---         Just e-> putStrLn ("Good, was very excite: " ++ e)
-
-
+doExcite :: IO ()
+doExcite = do
+    putStrLn "say something excite!"
+    excite <- Control.Monad.Trans.Maybe.runMaybeT maybeExcite
+    case excite of
+        Nothing -> putStrLn "MOAR EXCITE"
+        Just e -> putStrLn ("Good, was very excite: " ++ e)
 
 {-
 Se pide tambien escribir el Monad Transfromer de Writer, y sus instancias de Functor, 
