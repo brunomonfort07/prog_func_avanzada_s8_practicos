@@ -235,7 +235,7 @@ eval3000 (Num n) = return n
 eval3000 (Add e e') = do
     n <- eval3000 e
     m <- eval3000 e'
-    tell ["Found this motherfuc*** trying to Add" ++ " = " ++ show (n + m)]
+    tell ["Found this dude trying to Add" ++ " = " ++ show (n + m)]
     return (n + m)
 eval3000 (Div e e') = do
   n' <- eval3000 e'
@@ -243,7 +243,7 @@ eval3000 (Div e e') = do
     then lift $ lift $ lift $ Left "division por cero"
     else do
       n <- eval3000 e
-      tell ["Found this motherfuc*** trying to Div" ++ " = " ++ show (n `div` n')]
+      tell ["Found this dude trying to Div" ++ " = " ++ show (n `div` n')]
       return (n `div` n')
 eval3000 (Var var) = do
   variables <- lift Laboratorio.getT
@@ -270,3 +270,4 @@ eval3000EjemploExpr = runReaderT (runStateT (runWriterT (eval3000 ejemploExpr300
 
 ejAdd = Add (Num 2) (Num 3)
 testAdd = runReaderT (runStateT (runWriterT (eval3000 ejAdd)) M.empty) M.empty
+--Ejecutando "testAdd" en la consola debería aparecer "Found this dude trying to Add = 5"
