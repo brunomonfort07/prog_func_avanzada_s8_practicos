@@ -48,7 +48,7 @@ rDec = Reader (\n -> n-1)
 
 {- 2. Once you have an rDec that works, make it and any inner lambdas
 pointfree if that’s not already the case.
-"Hay que secar el \n"
+"Hay que sacar el \n"
 -}
 
 rDecPointFree :: Num a => Reader a a
@@ -73,11 +73,12 @@ Es decir, runReader es un atajo para:
     - Sacar el valor del Identity con runIdentity.
 -}
 rShow :: Show a => ReaderT a Identity String -- = Reader Int String
-rShow = ReaderT (\a -> Identity $ show (Identity a)) -- DUDA
+rShow = ReaderT (\a -> Identity $ show a) 
 
 {- 4. Once you have an rShow that works, make it pointfree.
 -}
--- DUDA EJERCICIO 3
+rShowPointFree :: Show a => ReaderT a Identity String -- = Reader Int String
+rShowPointFree = ReaderT (Identity . show) 
 
 {- 5. 
 rPrintAndInc will first print the input with a greeting, then return the input incremented by one.

@@ -6,7 +6,10 @@ module MonadTransformers where
 
 import Laboratorio
 import Control.Monad.Trans.Maybe
+import Control.Monad.Trans.Class
 import Control.Monad
+import Data.Map (Map)
+import qualified  Data.Map as M
 
 newtype Reader r a = Reader { runReader :: r -> a }
 
@@ -45,12 +48,11 @@ rDec = Reader (\n -> n-1)
 
 {- 2. Once you have an rDec that works, make it and any inner lambdas
 pointfree if that’s not already the case.
-"Hay que secar el \n"
 -}
 
 rDecPointFree :: Num a => Reader a a
 rDecPointFree = Reader (subtract 1)
--- Tambien funciona con (+(-1))
+
 
 {- 3. 
 rShow is show, but in Reader.
@@ -63,18 +65,13 @@ Prelude> fmap (runReader rShow) [1..10]
 -}
 
 
---Reader Int String ≡ ReaderT Int Identity String
-{-
-Es decir, runReader es un atajo para:
-    - Ejecutar el ReaderT con runReaderT, que te da un Identity a,
-    - Sacar el valor del Identity con runIdentity.
--}
 rShow :: Show a => ReaderT a Identity String -- = Reader Int String
-rShow = ReaderT (\a -> Identity $ show (Identity a)) -- DUDA
+rShow = ReaderT (\a -> Identity $ show a) 
 
 {- 4. Once you have an rShow that works, make it pointfree.
 -}
--- DUDA EJERCICIO 3
+rShowPointFree :: Show a => ReaderT a Identity String -- = Reader Int String
+rShowPointFree = ReaderT (Identity . show) 
 
 {- 5. 
 rPrintAndInc will first print the input with a greeting, then return the input incremented by one.
@@ -97,7 +94,6 @@ Hi: 10
 [2,3,4,5,6,7,8,9,10,11]
 -}
 
---runReaderT :: r -> m a
 rPrintAndInc :: (Num a, Show a) => ReaderT a IO a
 rPrintAndInc = ReaderT (\a -> do
     putStrLn $ "Hi: " ++ show a
@@ -135,8 +131,6 @@ The code won’t typecheck as written; fix it so that it does. Feel free to
 isValid :: String-> Bool
 isValid v = '!' `elem` v
 
--- guard produce la excepción cuando la condición es falsa (guard llama a mzero, que 
--- en IO falla). No hay una instancia de Alternative apropiada para manejar eso graciosamente.
 maybeExcite :: Control.Monad.Trans.Maybe.MaybeT IO String
 maybeExcite = Control.Monad.Trans.Maybe.MaybeT $ do
     v <- getLine
@@ -157,10 +151,101 @@ Se pide tambien escribir el Monad Transfromer de Writer, y sus instancias de Fun
 Applicative, Monad y MonadTrans. Para la instancia de Applicative usar la instancia de 
 monada, y no la de applicative como usualmente se hace,  al igual que se hizo en clase 
 cuando se definió la instancia Applicative para StateT.
+-}
 
+newtype Writer w a = Writer { runWriter :: (a, w) }
+
+newtype WriterT w m a = WriterT { runWriterT :: m (a, w) }
+
+instance (Functor f) => Functor (WriterT s f) where
+  fmap :: Functor f => (a -> b) -> WriterT s f a -> WriterT s f b
+  fmap g (WriterT h) = WriterT $ fmap (applyfst g) h
+    where applyfst g (a, s) = (g a, s)
+
+instance (Monad m, Monoid s) => Applicative (WriterT s m) where
+  pure :: Monad m => a -> WriterT s m a
+  pure a = WriterT $ pure (a, mempty)
+  (<*>) :: Monad m => WriterT s m (a -> b) -> WriterT s m a -> WriterT s m b
+  WriterT h <*> WriterT g = WriterT $ do
+    (f, s') <- h
+    (a, s'') <- g
+    return (f a, s' <> s'')
+
+instance (Monad m, Monoid s) => Monad (WriterT s m) where
+
+  (>>=) :: Monad m => WriterT s m a -> (a -> WriterT s m b) -> WriterT s m b
+  WriterT h >>= g = WriterT $ do
+    (a, s') <- h
+    (b, s'') <- runWriterT $ g a
+    return (b, s' <> s'')
+
+tell :: Monad m => w -> WriterT w m ()
+tell w = WriterT $ do 
+    return ((), w)
+
+{-
 Usar el monad transformer definido anteriormente para extender el ejemplo de expresiones 
 visto en el teórico, agregando al stack de monadas la monada definida anteriormente,  
 de forma de agregar el efecto de tracing o logging al ejemplo visto en clase. Se pide 
 también modificar el evaluador para que logee cada vez que se calcula un resultado 
 intermedio.
 -}
+
+instance Monoid s => MonadTrans (WriterT s) where
+  lift :: Monad m => m a -> WriterT s m a
+  lift ma = WriterT $ do
+    a <- ma
+    return (a, mempty)
+
+
+eval3000 :: Expr ->
+                WriterT [String]
+                    (StateT
+                       (Map String Int) 
+                       (ReaderT  
+                          (Map String Int)  
+                          (Either 
+                             String 
+                          )
+                       )
+                    )
+                    Int 
+
+eval3000 (Num n) = return n
+eval3000 (Add e e') = do
+    n <- eval3000 e
+    m <- eval3000 e'
+    tell ["Found this dude trying to Add" ++ " = " ++ show (n + m)]
+    return (n + m)
+eval3000 (Div e e') = do
+  n' <- eval3000 e'
+  if n' == 0
+    then lift $ lift $ lift $ Left "division por cero"
+    else do
+      n <- eval3000 e
+      tell ["Found this dude trying to Div" ++ " = " ++ show (n `div` n')]
+      return (n `div` n')
+eval3000 (Var var) = do
+  variables <- lift Laboratorio.getT
+  case M.lookup var variables of
+    Nothing -> lift $ lift $ lift $ Left "variable no inicializada"
+    Just n -> return n
+eval3000 (Cte cte) = do
+  constantes <- lift $ lift askT
+  case M.lookup cte constantes of
+    Nothing -> lift $ lift $ lift $ Left "constante no conocida"
+    Just n -> return n
+eval3000 (Assign var e) = do
+  n <- eval3000 e
+  variables <- lift getT
+  lift $ putT $ M.insert var n variables
+  return n
+
+ejemploExpr3000 :: Expr
+ejemploExpr3000 = Assign "hola" (Num 2)
+
+eval3000EjemploExpr :: Either String ((Int, [String]), Map String Int)
+eval3000EjemploExpr = runReaderT (runStateT (runWriterT (eval3000 ejemploExpr3000)) M.empty) M.empty
+
+ejAdd = Add (Num 2) (Num 3)
+testAdd = runReaderT (runStateT (runWriterT (eval3000 ejAdd)) M.empty) M.empty
