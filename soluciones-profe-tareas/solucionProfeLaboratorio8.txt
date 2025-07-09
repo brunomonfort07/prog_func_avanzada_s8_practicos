@@ -1,0 +1,53 @@
+-- 16.9 Hutton
+-- ej 1
+
+Probar que: add n (Succ m) = Succ (add n m)
+
+Caso base:
+
+add Zero (Succ m)
+-- por def de add
+Succ m
+-- porque add Zero m = m
+Succ (add Zero m)
+
+Caso Inductivo:
+
+Queremos demostrar -> add (Succ n) (Succ m) = Succ (add (Succ n) m)
+
+Lado Izquierdo:
+
+add (Succ n) (Succ m)
+-- aplicando definición de add
+Succ (add n (Succ m))
+-- por hipótesis inductiva
+Succ (Succ (add n m))
+-- revirtiendo definición de add
+Succ (add (Succ n) m)
+
+-------------------------------------------
+
+-- ej 2
+Podemos usar que: add n Zero = n para demostrar que: add n m = add m n
+
+Caso base:
+
+add Zero m 
+-- aplicando definición de add
+m
+-- usando la prop. dada
+add m Zero
+
+Caso Inductivo:
+
+Queremos demostrar -> add (Succ n) m = add m (Succ n)
+
+Lado Izquierdo:
+
+add (Succ n) m
+-- aplicando definición de add
+Succ (add n m)
+-- por hipótesis inductiva
+Succ (add m n)
+-- sacando lo demostrado en el ej1 (add n (Succ m) = Succ (add n m))
+add m (Succ n)
